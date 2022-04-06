@@ -4,6 +4,14 @@ info:
   title: Pawnflow API
   description: Pawnflow API
 paths:
+  /:
+    get:
+      operationId: getDebug
+      responses:
+        default:
+          description: "Default response for GET /debug"
+      x-amazon-apigateway-integration:
+        $ref: '#/components/x-amazon-apigateway-integrations/debug'
   /debug:
     get:
       operationId: getDebug
@@ -16,8 +24,8 @@ paths:
 components:
   x-amazon-apigateway-integrations:
     debug:
-      type: AWS_PROXY
+      type: MOCK
       httpMethod: GET
-      uri: "foo/bar"
-      payloadFormatVersion: "2.0"
-      connectionType: INTERNET
+#      uri: "foo/bar"
+#      payloadFormatVersion: "2.0"
+#      connectionType: INTERNET

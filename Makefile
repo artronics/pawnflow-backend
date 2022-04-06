@@ -19,6 +19,6 @@ plan:
 	terraform $(TERRAFORM_OPT) plan
 
 apply:
-	 terraform $(TERRAFORM_OPT) apply -auto-approve
+	 AWS_PROFILE=jalal terraform $(TERRAFORM_OPT) apply -auto-approve
 
 all: plan apply
