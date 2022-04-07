@@ -1,6 +1,6 @@
 resource "aws_apigatewayv2_api" "service_api" {
-  name          = "${var.project}-${var.service}-${var.env}"
-  description   = "Pawnflow service backend api - ${var.env}"
+  name          = "${var.project}-${var.service}-${var.environment}"
+  description   = "Pawnflow service backend api - ${var.environment}"
   protocol_type = "HTTP"
   body          = templatefile("api.yaml", {})
 
@@ -27,13 +27,19 @@ resource "aws_apigatewayv2_domain_name" "service_api_domain_name" {
     }
   */
 
-  tags = merge(local.tags, { Name = "${local.app_prefix}-api-domain-name" })
+  tags = merge(local.tags, { Name = "${local.name_prefix}-api-domain-name" })
+}
+
+resource "aws_apigatewayv2_api_mapping" "example" {
+  api_id      = aws_apigatewayv2_api.service_api.id
+  domain_name = aws_apigatewayv2_domain_name.service_api_domain_name.id
+  stage       = aws_apigatewayv2_stage.default.id
 }
 
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.service_api.id
-  name        = var.env
-  auto_deploy = false
+  name        = var.environment
+  auto_deploy = true
 
   tags = local.tags
 
@@ -45,7 +51,8 @@ resource "aws_apigatewayv2_stage" "default" {
 
 resource "aws_apigatewayv2_route" "this" {
   api_id    = aws_apigatewayv2_api.service_api.id
-  route_key = "$default"
+  route_key = "GET /hello"
+  target    = "integrations/${aws_apigatewayv2_integration.route.id}"
 
   #  api_key_required                    = try(each.value.api_key_required, null)
   #  authorization_type                  = try(each.value.authorization_type, "NONE")
@@ -61,13 +68,26 @@ resource "aws_apigatewayv2_route" "this" {
 }
 
 resource "aws_apigatewayv2_integration" "route" {
-  api_id           = aws_apigatewayv2_api.service_api.id
-  integration_type = "MOCK"
+  api_id             = aws_apigatewayv2_api.service_api.id
+  integration_uri    = aws_lambda_function.debug_endpoint_function.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
 }
 
-resource "aws_apigatewayv2_deployment" "dep" {
+resource "aws_lambda_permission" "apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.debug_endpoint_function.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # The /*/* portion grants access from any method on any resource
+  # within the API Gateway "REST API".
+  source_arn = "${aws_apigatewayv2_api.service_api.execution_arn}/*/*"
+}
+
+resource "aws_apigatewayv2_deployment" "deployment" {
   api_id      = aws_apigatewayv2_api.service_api.id
-  description = "Example deployment"
+  description = "BaRS api deployment"
 
   lifecycle {
     create_before_destroy = true

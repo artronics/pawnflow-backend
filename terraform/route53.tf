@@ -4,8 +4,8 @@ data "aws_route53_zone" "pawnflow_zone" {
 
 resource "aws_acm_certificate" "service_certificate" {
   provider                  = aws.acm_provider
-  domain_name               = var.domain_name
-  subject_alternative_names = [local.service_domain_name]
+  domain_name               = local.service_domain_name
+  subject_alternative_names = []
   validation_method         = "DNS"
 
   lifecycle {

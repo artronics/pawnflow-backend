@@ -2,7 +2,7 @@ variable "project" {
   default = "pawnflow"
 }
 
-variable "env" {
+variable "environment" {
   default = "dev"
 }
 
@@ -15,13 +15,13 @@ variable "service" {
 }
 
 locals {
-  service_domain_name = "api.${var.env}.${var.domain_name}"
+  service_domain_name = "api.${var.environment}.${var.domain_name}"
 }
 locals {
-  app_prefix = "${var.project}-${var.env}"
-  tags       = {
+  name_prefix = "${var.project}-${var.service}-${var.environment}"
+  tags        = {
     Project     = var.project
-    Environment = var.env
+    Environment = var.environment
     Tier        = "backend"
   }
 }

@@ -21,4 +21,14 @@ plan:
 apply:
 	 AWS_PROFILE=jalal terraform $(TERRAFORM_OPT) apply -auto-approve
 
-all: plan apply
+build:
+	$(MAKE) -C pawnflow
+
+build-aws:
+	$(MAKE) -C pawnflow
+
+run:
+	$(MAKE) -C pawnflow
+
+clean:
+	rm -rf build terraform/build
